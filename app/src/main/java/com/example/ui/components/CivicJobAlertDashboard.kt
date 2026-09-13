@@ -20,8 +20,14 @@ data class JobAlertItem(
     val id: String = java.util.UUID.randomUUID().toString(),
     val title: String,
     val board: String, // SSC, UPSSSC, Railway, Police, UPPSC
-    val date: String,
-    val type: String, // "job", "admit", "result"
+    val category: String = "job", // job | admit | result | upcoming
+    val startDate: String = "2026-10-01T00:00:00Z",
+    val lastDate: String = "2026-10-25T23:59:59Z",
+    val statusLabel: String = "Active", // Active | Upcoming | Expiring Soon | Closed
+    val isActive: Boolean = true,
+    val importantInfo: String = "",
+    val notifiedUpcoming: Boolean = false,
+    val notifiedExpiring: Boolean = false,
     val docsChecklist: List<String> = listOf("Aadhaar Card", "Passport Photo", "Candidate Signature", "Educational Marksheet", "Category Certificate (if applicable)")
 )
 
@@ -40,15 +46,15 @@ fun CivicJobAlertDashboard(
     val tabTitles = listOf("Latest Jobs", "Latest Admit Card", "Latest Results")
     val filteredItems = items.filter { item ->
         val matchesTab = when (selectedTab) {
-            0 -> item.type == "job"
-            1 -> item.type == "admit"
-            2 -> item.type == "result"
+            0 -> item.category == "job" || item.category == "upcoming"
+            1 -> item.category == "admit"
+            2 -> item.category == "result"
             else -> true
         }
         val matchesSearch = searchQuery.isBlank() ||
                 item.title.contains(searchQuery, ignoreCase = true) ||
                 item.board.contains(searchQuery, ignoreCase = true)
-        matchesTab && matchesSearch
+        matchesTab && matchesSearch && item.isActive
     }
 
     Column(
@@ -109,7 +115,7 @@ fun CivicJobAlertDashboard(
                 .weight(1f),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Featured Highlight Card for UPSSSC on Jobs tab (when no heavy search query conflicts)
+            // Featured Highlight Card for UPSSSC on Jobs tab
             if (selectedTab == 0 && (searchQuery.isBlank() || "UPSSSC".contains(searchQuery, ignoreCase = true) || "Constable".contains(searchQuery, ignoreCase = true))) {
                 item {
                     UpssscHighlightCard(
@@ -132,11 +138,16 @@ fun CivicJobAlertDashboard(
             } else {
                 items(filteredItems) { item ->
                     val isExpanded = expandedDocsId == item.id
-                    val categoryLabel = when (item.type) {
+                    val categoryLabel = when (item.category) {
                         "job" -> "Job Application"
+                        "upcoming" -> "Upcoming Job"
                         "admit" -> "Admit Card Download"
                         else -> "Result Checking"
                     }
+
+                    val isExpiring = item.statusLabel.contains("Expiring", ignoreCase = true)
+                    val statusColor = if (isExpiring) Color(0xFFC62828) else Color(0xFF2E7D32)
+                    val statusBg = if (isExpiring) Color(0xFFFFEBEE) else Color(0xFFE8F5E9)
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -162,11 +173,18 @@ fun CivicJobAlertDashboard(
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
-                                Text(
-                                    text = item.date,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.outline
-                                )
+                                Surface(
+                                    color = statusBg,
+                                    shape = MaterialTheme.shapes.small
+                                ) {
+                                    Text(
+                                        text = item.statusLabel,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = statusColor,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -175,6 +193,14 @@ fun CivicJobAlertDashboard(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            if (item.importantInfo.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = item.importantInfo,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
                             Spacer(modifier = Modifier.height(12.dp))
 
                             // Custom CSC Action Footer

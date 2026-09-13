@@ -1,7 +1,5 @@
 package com.example.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Schedule
@@ -15,36 +13,48 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun ShopStatusBar(
     showWatermark: Boolean,
     onToggleWatermark: () -> Unit
 ) {
-    // Injecting India Standard Time (IST UTC+5:30) offset calculation for accurate shop hours evaluation
     val istZone = ZoneId.of("Asia/Kolkata")
-    val istTime = ZonedDateTime.now(istZone)
-    val dayOfWeek = istTime.dayOfWeek
-    val time = istTime.toLocalTime()
+    var currentTime by remember { mutableStateOf(ZonedDateTime.now(istZone)) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            currentTime = ZonedDateTime.now(istZone)
+            delay(1000L)
+        }
+    }
+
+    val dayOfWeek = currentTime.dayOfWeek
+    val time = currentTime.toLocalTime()
 
     val isSunday = dayOfWeek == DayOfWeek.SUNDAY
-    val isMorning = !time.isBefore(LocalTime.of(10, 0)) && time.isBefore(LocalTime.of(14, 0))
-    val isEvening = !time.isBefore(LocalTime.of(16, 0)) && time.isBefore(LocalTime.of(19, 0))
+    val openTime = LocalTime.of(10, 0)
+    val closeTime = LocalTime.of(19, 0) // 7:00 PM
 
-    val isOpen = !isSunday && (isMorning || isEvening)
+    val isOpen = !isSunday && !time.isBefore(openTime) && time.isBefore(closeTime)
+    
     val statusText = when {
-        isSunday -> "CLOSED (Sunday Holiday)"
-        isMorning -> "OPEN (Morning Shift: 10AM - 2PM)"
-        isEvening -> "OPEN (Evening Shift: 4PM - 7PM)"
-        else -> "CLOSED (Outside Shift Hours)"
+        isSunday -> "CLOSED - Sunday"
+        time.isBefore(openTime) -> "Opens at 10:00 AM"
+        time.isAfter(closeTime) || time == closeTime -> "Closed for today (Opens 10 AM)"
+        else -> "OPEN - Closes at 7:00 PM"
     }
 
     val badgeColor = if (isOpen) Color(0xFF2E7D32) else Color(0xFFC62828)
     val badgeBg = if (isOpen) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
     Card(
         modifier = Modifier
@@ -68,12 +78,21 @@ fun ShopStatusBar(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
-                        Text(
-                            text = "Prayagi Jan Seva Kendra (IST)",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Prayagi Jan Seva Kendra",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "IST: ${currentTime.format(timeFormatter)}",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         Surface(
                             color = badgeBg,
                             shape = MaterialTheme.shapes.small,

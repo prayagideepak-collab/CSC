@@ -1,10 +1,13 @@
 package com.example.ui
 
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.data.PrayagiDatabase
+import com.example.data.JobRepository
 import com.example.ui.components.JobAlertItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -12,10 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.DayOfWeek
-import java.time.temporal.ChronoUnit
+import kotlinx.coroutines.flow.collectLatest
 
 data class FamilyMember(
     val id: String = java.util.UUID.randomUUID().toString(),
@@ -69,21 +69,37 @@ data class KendraUiState(
     val jobAlertsTab: Int = 0,
     val jobSearchQuery: String = "",
     val expandedJobDocsId: String? = null,
-    val jobAlertItems: List<JobAlertItem> = listOf(
-        JobAlertItem(title = "UPSSSC PET / Constable Recruitment 2026", board = "UPSSSC", date = "Last Date: 25 Oct 2026", type = "job"),
-        JobAlertItem(title = "SSC CGL Tier-2 Admit Card 2026", board = "SSC", date = "Exam: 02 Nov 2026", type = "admit"),
-        JobAlertItem(title = "Railway RRB NTPC Final Result 2026", board = "Railway", date = "Declared: Recent", type = "result"),
-        JobAlertItem(title = "UP Police Constable Re-Exam 2026", board = "Police", date = "Last Date: 10 Nov 2026", type = "job"),
-        JobAlertItem(title = "UPPSC RO/ARO Prelims Admit Card", board = "UPPSC", date = "Exam: 18 Nov 2026", type = "admit"),
-        JobAlertItem(title = "SSC CHSL Final Result 2026", board = "SSC", date = "Declared: Yesterday", type = "result")
-    )
+    val jobAlertItems: List<JobAlertItem> = emptyList()
 )
 
 data class ChatMessage(val text: String, val isUser: Boolean)
 
-class KendraViewModel : ViewModel() {
+class KendraViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: JobRepository
     private val _state = MutableStateFlow(KendraUiState())
     val state: StateFlow<KendraUiState> = _state.asStateFlow()
+
+    init {
+        val db = PrayagiDatabase.getDatabase(application)
+        repository = JobRepository(db.jobAlertDao())
+
+        viewModelScope.launch {
+            // Seed initial data if empty
+            val initialJobs = listOf(
+                JobAlertItem(title = "UPSSSC PET / Constable Recruitment 2026", board = "UPSSSC", category = "job", statusLabel = "Active", importantInfo = "Minimum 10th Pass, Age 18-28. Apply via Prayagi Kendra."),
+                JobAlertItem(title = "SSC CGL Tier-2 Admit Card 2026", board = "SSC", category = "admit", statusLabel = "Exam: 02 Nov", importantInfo = "Download admit card and print at Prayagi Kendra."),
+                JobAlertItem(title = "Railway RRB NTPC Final Result 2026", board = "Railway", category = "result", statusLabel = "Declared", importantInfo = "Check scorecards and merit list."),
+                JobAlertItem(title = "UP Police Constable Re-Exam 2026", board = "Police", category = "job", statusLabel = "Expiring in 5 Days", importantInfo = "Last date approaching fast. Hurry!"),
+                JobAlertItem(title = "UPPSC RO/ARO Prelims Admit Card", board = "UPPSC", category = "admit", statusLabel = "Available", importantInfo = "Exam center location verification available."),
+                JobAlertItem(title = "SSC CHSL Final Result 2026", board = "SSC", category = "result", statusLabel = "Declared", importantInfo = "Check final cut-off and selection status.")
+            )
+            repository.refreshCache(initialJobs)
+
+            repository.cachedJobs.collectLatest { cached ->
+                _state.update { it.copy(jobAlertItems = cached) }
+            }
+        }
+    }
 
     fun toggleWatermark() {
         _state.update { it.copy(showWatermark = !it.showWatermark) }
