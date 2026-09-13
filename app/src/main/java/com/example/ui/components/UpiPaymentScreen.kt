@@ -25,6 +25,7 @@ fun UpiPaymentScreen(
     onSetUpiStatus: (String) -> Unit,
     onShareWhatsAppScreenshot: (String) -> Unit
 ) {
+    val blankStatePrompt = selectedAmount <= 0 && customAmount.isBlank()
     val finalAmount = if (customAmount.isNotBlank()) (customAmount.toIntOrNull() ?: selectedAmount) else selectedAmount
     val upiIntentUri = "upi://pay?pa=9235939809@okbizaxis&pn=PrayagiKendra&am=$finalAmount&cu=INR"
 
