@@ -52,6 +52,7 @@ class JobRepository(private val dao: JobAlertDao) {
         JobAlertItem(title = "Railway RRB NTPC Final Result 2026", board = "Railway", category = "result", statusLabel = "Declared", importantInfo = "Check scorecards and merit list."),
         JobAlertItem(title = "UP Police Constable Re-Exam 2026", board = "Police", category = "job", statusLabel = "Expiring in 5 Days", importantInfo = "Last date approaching fast. Hurry!"),
         JobAlertItem(title = "UPPSC RO/ARO Prelims Admit Card", board = "UPPSC", category = "admit", statusLabel = "Available", importantInfo = "Exam center location verification available."),
-        JobAlertItem(title = "SSC CHSL Final Result 2026", board = "SSC", category = "result", statusLabel = "Declared", importantInfo = "Check final cut-off and selection status.")
+        JobAlertItem(title = "SSC CHSL Final Result 2026", board = "SSC", category = "result", statusLabel = "Declared", importantInfo = "Check final cut-off and selection status."),
+        JobAlertItem(title = "PM Kisan Samman Nidhi 19th Installment Verification", board = "Govt of India", category = "scheme", statusLabel = "Announcement", importantInfo = "Ensure Aadhaar-bank seeding and e-KYC are complete at Prayagi Kendra.")
     )
 }

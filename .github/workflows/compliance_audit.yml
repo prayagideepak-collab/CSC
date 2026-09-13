@@ -1,0 +1,47 @@
+name: Prayagi CSC Compliance & Integrity Check
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  audit-compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 1. Zero-Leak Privacy Check (Banned Number 9336557781)
+        run: |
+          echo "Scanning for banned personal number 9336557781..."
+          if grep -rn "9336557781" .; then
+            echo "❌ CRITICAL SECURITY BREACH: Banned personal number 9336557781 detected in repo!"
+            exit 1
+          fi
+          echo "🟢 PASS: Zero banned numbers found."
+
+      - name: 2. Verify Official Helpline & WhatsApp Standard (9235939809)
+        run: |
+          if grep -rn "9235939809" .; then
+            echo "🟢 PASS: Official helpline 9235939809 present."
+          else
+            echo "⚠️ WARNING: Official helpline 9235939809 reference missing."
+          fi
+
+      - name: 3. Verify Exact GPS Pin Lock (25.4167007, 81.8781510)
+        run: |
+          if grep -rn "25.4167007" .; then
+            echo "🟢 PASS: Exact latitude 25.4167007 locked."
+          else
+            echo "⚠️ WARNING: Exact latitude coordinate missing."
+          fi
+
+      - name: 4. Verify Fixed Official UPI QR Asset (1000314795.png)
+        run: |
+          if find . -name "1000314795.png" | grep -q .; then
+            echo "🟢 PASS: Fixed official QR image found."
+          else
+            echo "⚠️ WARNING: Fixed QR file 1000314795.png not found in directory tree."
+          fi

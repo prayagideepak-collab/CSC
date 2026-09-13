@@ -189,15 +189,15 @@ class KendraViewModel(application: Application) : AndroidViewModel(application) 
             q.contains("time") || q.contains("timing") || q.contains("open") -> 
                 "Prayagi Jan Seva Kendra timings: Morning 10:00 AM - 2:00 PM, Evening 4:00 PM - 7:00 PM. Sundays are Closed."
             q.contains("helpline") || q.contains("call") || q.contains("number") -> 
-                "Official Helpline: 9235939809 (Call or WhatsApp wa.me/919235939809). No personal numbers used."
+                "Prayagi Jan Seva Kendra operates via digital document checklists and direct government portal links."
             q.contains("ration") || q.contains("family") -> 
                 "For Ration Card, family members under 5 years old are excluded from the main ration count. Non-twin members require at least 9 months (270 days) gap between birth dates."
             q.contains("pan") || q.contains("voter") || q.contains("passport") || q.contains("caste") || q.contains("income") -> 
-                "You can check document checklists and official government tracking portals directly in our app tabs. For direct assistance, WhatsApp us at 9235939809!"
+                "You can check document checklists and official government tracking portals directly in our app tabs."
             q.contains("upi") || q.contains("pay") || q.contains("qr") -> 
-                "Official UPI VPA: 9235939809@okbizaxis (Prayagi Kendra). Pay via QR or select service amount and share screenshot on WhatsApp."
+                "Official UPI VPA: 9235939809@okbizaxis (Prayagi Kendra). Pay via QR or select service amount."
             else -> 
-                "Thank you for contacting Prayagi Jan Seva Kendra! For immediate service, please call or WhatsApp 9235939809 or check our document checklists and payment tabs."
+                "Thank you for visiting Prayagi Jan Seva Kendra! Please check our document checklists and payment tabs for digital services."
         }
     }
 
