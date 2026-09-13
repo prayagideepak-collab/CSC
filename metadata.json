@@ -1,0 +1,7 @@
+{
+  "name": "Prayagi Jan Seva Kendra",
+  "description": "Prayagi Store And Services - Official Jan Seva Kendra app for document verification, Ration Card validation, UPI payments, and government portal tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
