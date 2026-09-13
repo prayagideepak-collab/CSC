@@ -45,6 +45,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity() {
                             modifier = Modifier.fillMaxSize(),
                             topBar = {
                                 Column {
+                                    LiveAlertsTicker()
                                     ShopStatusBar(
                                         showWatermark = state.showWatermark,
                                         onToggleWatermark = { viewModel.toggleWatermark() }

@@ -16,21 +16,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.sp
 import java.time.DayOfWeek
-import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @Composable
 fun ShopStatusBar(
     showWatermark: Boolean,
     onToggleWatermark: () -> Unit
 ) {
-    val now = LocalDateTime.now()
-    val dayOfWeek = now.dayOfWeek
-    val time = now.toLocalTime()
+    // Injecting India Standard Time (IST UTC+5:30) offset calculation for accurate shop hours evaluation
+    val istZone = ZoneId.of("Asia/Kolkata")
+    val istTime = ZonedDateTime.now(istZone)
+    val dayOfWeek = istTime.dayOfWeek
+    val time = istTime.toLocalTime()
 
     val isSunday = dayOfWeek == DayOfWeek.SUNDAY
-    val isMorning = time.isAfter(LocalTime.of(10, 0)) && time.isBefore(LocalTime.of(14, 0))
-    val isEvening = time.isAfter(LocalTime.of(16, 0)) && time.isBefore(LocalTime.of(19, 0))
+    val isMorning = !time.isBefore(LocalTime.of(10, 0)) && time.isBefore(LocalTime.of(14, 0))
+    val isEvening = !time.isBefore(LocalTime.of(16, 0)) && time.isBefore(LocalTime.of(19, 0))
 
     val isOpen = !isSunday && (isMorning || isEvening)
     val statusText = when {
@@ -66,7 +69,7 @@ fun ShopStatusBar(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "Prayagi Jan Seva Kendra",
+                            text = "Prayagi Jan Seva Kendra (IST)",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface

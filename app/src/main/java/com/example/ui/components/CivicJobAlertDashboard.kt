@@ -102,23 +102,34 @@ fun CivicJobAlertDashboard(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Item List
-        if (filteredItems.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No notifications found matching your search.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+        // Item List with Highlight Card on Jobs Tab
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Featured Highlight Card for UPSSSC on Jobs tab (when no heavy search query conflicts)
+            if (selectedTab == 0 && (searchQuery.isBlank() || "UPSSSC".contains(searchQuery, ignoreCase = true) || "Constable".contains(searchQuery, ignoreCase = true))) {
+                item {
+                    UpssscHighlightCard(
+                        onWhatsAppClick = { msg -> onApplyWhatsApp("UPSSSC Constable / PET Recruitment 2026", msg) }
+                    )
+                }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
+
+            if (filteredItems.isEmpty() && !(selectedTab == 0 && searchQuery.isBlank())) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No notifications found matching your search.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                    }
+                }
+            } else {
                 items(filteredItems) { item ->
                     val isExpanded = expandedDocsId == item.id
                     val categoryLabel = when (item.type) {
